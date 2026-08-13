@@ -314,6 +314,7 @@
               <option value="Transfer Bank Mandiri">Transfer — Bank Mandiri</option>
             </select>
           </div>
+          <div id="rekWrap" style="display:none;"><label>No. Rekening (dari supplier)</label><input type="text" id="fNoRek" placeholder="Isi no. rekening supplier"></div>
         </div>
 
         <hr class="section-divider">
@@ -561,11 +562,17 @@ document.getElementById('btnAddItem').addEventListener('click', ()=>addItem());
 window.removeItem = removeItem;
 
 /* ---------- FORM -> PREVIEW ---------- */
-const formIds = ['fNomor','fTanggal','fStatus','fMetode','bNama','bPic','bAlamat','bKontak','sNama','sAlamat','sKontak','fDiskon','fBiayaLain','fCatatan'];
+const formIds = ['fNomor','fTanggal','fStatus','fMetode','fNoRek','bNama','bPic','bAlamat','bKontak','sNama','sAlamat','sKontak','fDiskon','fBiayaLain','fCatatan'];
 formIds.forEach(id=>{
   document.getElementById(id).addEventListener('input', renderPreview);
   document.getElementById(id).addEventListener('change', renderPreview);
 });
+
+function toggleRekField(){
+  const isTransfer = document.getElementById('fMetode').value === 'Transfer Bank Mandiri';
+  document.getElementById('rekWrap').style.display = isTransfer ? '' : 'none';
+}
+document.getElementById('fMetode').addEventListener('change', toggleRekField);
 
 function getFormData(){
   return {
@@ -573,6 +580,7 @@ function getFormData(){
     tanggal: document.getElementById('fTanggal').value,
     status: document.getElementById('fStatus').value,
     metode: document.getElementById('fMetode').value.trim(),
+    noRek: document.getElementById('fNoRek').value.trim(),
     pembeli: {
       nama: document.getElementById('bNama').value.trim(),
       pic: document.getElementById('bPic').value.trim(),
@@ -627,10 +635,9 @@ function renderPreview(){
   const pill = document.getElementById('pStatusPill');
   pill.textContent = label;
   pill.className = 'pill ' + cls;
-  const REK_MANDIRI = '1300024837554';
   let metodeText = d.metode;
   if(d.metode === 'Transfer Bank Mandiri'){
-    metodeText = 'Transfer — Bank Mandiri No. Rek ' + REK_MANDIRI;
+    metodeText = 'Transfer — Bank Mandiri No. Rek ' + (d.noRek || '—');
   }
   document.getElementById('pMetode').textContent = d.metode ? ('Metode: ' + metodeText) : '';
 
@@ -663,6 +670,8 @@ function resetForm(){
   document.getElementById('fTanggal').value = todayStr();
   document.getElementById('fStatus').value = 'belum';
   document.getElementById('fMetode').value = 'Cash';
+  document.getElementById('fNoRek').value = '';
+  toggleRekField();
   document.getElementById('bNama').value = 'ARM Upeksha';
   document.getElementById('bPic').value = '';
   document.getElementById('bAlamat').value = '';
@@ -686,6 +695,8 @@ function loadInvoiceToForm(id){
   document.getElementById('fTanggal').value = inv.tanggal;
   document.getElementById('fStatus').value = inv.status;
   document.getElementById('fMetode').value = inv.metode;
+  document.getElementById('fNoRek').value = inv.noRek || '';
+  toggleRekField();
   document.getElementById('bNama').value = inv.pembeli.nama;
   document.getElementById('bPic').value = inv.pembeli.pic || '';
   document.getElementById('bAlamat').value = inv.pembeli.alamat;
